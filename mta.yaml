@@ -1,0 +1,55 @@
+_schema-version: "3.2"
+ID: helloWorld
+version: 0.0.1
+modules:
+- name: helloworld-approuter
+  type: approuter.nodejs
+  path: helloworld-approuter
+  requires:
+  - name: helloWorld_html_repo_runtime
+  - name: uaa_helloWorld
+  parameters:
+    disk-quota: 256M
+    memory: 256M
+- name: helloWorld_ui_deployer
+  type: com.sap.html5.application-content
+  path: helloWorld_ui_deployer
+  requires:
+  - name: helloWorld_html_repo_host
+  build-parameters:
+    requires:
+    - artifacts:
+      - ./*
+      name: HTML5Module
+      target-path: resources/HTML5Module
+- name: HTML5Module
+  type: html5
+  path: HTML5Module
+  build-parameters:
+    build-result: dist
+    builder: custom
+    commands:
+    - npm run build
+    supported-platforms: []
+resources:
+- name: helloWorld_html_repo_runtime
+  type: org.cloudfoundry.managed-service
+  parameters:
+    service: html5-apps-repo
+    service-plan: app-runtime
+- name: helloWorld_html_repo_host
+  type: org.cloudfoundry.managed-service
+  parameters:
+    service: html5-apps-repo
+    service-plan: app-host
+- name: uaa_helloWorld
+  type: org.cloudfoundry.managed-service
+  parameters:
+    path: ./xs-security.json
+    service: xsuaa
+    service-plan: application
+build-parameters:
+  before-all:
+  - builder: custom
+    commands:
+    - npm install
